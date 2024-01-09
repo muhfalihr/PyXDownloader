@@ -1,0 +1,48 @@
+{
+    "__typename": "User",
+    "id": "VXNlcjoxNDg3MjkxOTI4MjU3NjU0Nzg1",
+    "rest_id": "1487291928257654785",
+    "is_blue_verified": false,
+    "legacy": {
+        "following": true,
+        "created_at": "2022-01-29T05:10:20",
+        "default_profile": true,
+        "default_profile_image": false,
+        "description": "Ohayo! Konnichiwa! Oyasumi! Aku ingin ada di setiap harimu.",
+        "entities": {
+            "description": {
+                "urls": []
+            },
+            "url": {
+                "urls": [
+                    {
+                        "display_url": "jkt48.com",
+                        "expanded_url": "http://jkt48.com",
+                        "url": "https://t.co/3NWmmd7nN0",
+                        "indices": [
+                            0,
+                            23
+                        ]
+                    }
+                ]
+            }
+        },
+        "favourites_count": 524,
+        "followers_count": 283596,
+        "friends_count": 59,
+        "listed_count": 1989,
+        "location": "",
+        "media_count": 290,
+        "name": "Gabriela Abigail",
+        "normal_followers_count": 283596,
+        "pinned_tweet_ids_str": [],
+        "profile_banner_url": "https://pbs.twimg.com/profile_banners/1487291928257654785/1703912361",
+        "profile_image_url_https": "https://pbs.twimg.com/profile_images/1740760088242257921/ogz0el4a_400x400.jpg",
+        "profile_interstitial_type": "",
+        "screen_name": "AM_EllaJKT48",
+        "statuses_count": 2043,
+        "url": "https://t.co/3NWmmd7nN0",
+        "verified": false
+    },
+    "business_account": {}
+}
