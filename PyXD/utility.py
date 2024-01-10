@@ -3,6 +3,7 @@ import hashlib
 import json
 import pytz
 import re
+import os
 
 from datetime import datetime
 
@@ -69,3 +70,15 @@ class Utility:
         caller_frame = inspect.getouterframes(current_frame)[1]
         function_name = caller_frame[3]
         return function_name
+
+    @staticmethod
+    def mkdir(path: str):
+        """
+        Check whether the given path exists in the system, if not, a new folder will be created with a name that matches the given path.
+        """
+        if not os.path.exists(path):
+            try:
+                os.makedirs(path)
+                print("Created a new folder because the given folder does not exist.")
+            except OSError as e:
+                raise e

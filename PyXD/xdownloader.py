@@ -5,9 +5,10 @@ import requests
 from requests.sessions import Session
 from urllib.parse import urljoin, unquote, quote
 from datetime import datetime
-from utility import Utility
+from PyXD.utility import Utility
 from faker import Faker
 from typing import Any
+from tqdm import tqdm
 
 
 class PyXDownloader:
@@ -25,9 +26,6 @@ class PyXDownloader:
         self.__headers["Authorization"] = "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA"
         if cookie is not None:
             self.__headers["Cookie"] = cookie
-
-        self.__generatekey = lambda datas, keys:  [
-            key for key in datas if key in keys]
 
     def __guest_token(self):
         user_agent = self.__fake.user_agent()
@@ -60,25 +58,6 @@ class PyXDownloader:
     def __buildparams(self, **kwargs):
         func_name = kwargs["func_name"]
         match func_name:
-            case "search":
-                rawquery = kwargs["rawquery"]
-                count = kwargs["count"]
-                cursor = kwargs["cursor"]
-                product = kwargs["product"]
-
-                variables = {
-                    "rawQuery": f"{rawquery}",
-                    "count": count,
-                    "cursor": f"{cursor}",
-                    "querySource": "typed_query",
-                    "product": f"{product}"
-                } if cursor else {
-                    "rawQuery": f"{rawquery}",
-                    "count": count,
-                    "querySource": "typed_query",
-                    "product": f"{product}"
-                }
-
             case "__profile":
                 screen_name = kwargs["screen_name"]
 
@@ -89,79 +68,7 @@ class PyXDownloader:
 
                 fieldToggles = {"withAuxiliaryUserLabels": False}
 
-            case "posts":
-                userId = kwargs["userId"]
-                count = kwargs["count"]
-                cursor = kwargs["cursor"]
-
-                variables = {
-                    "userId": f"{userId}",
-                    "count": count,
-                    "cursor": f"{cursor}",
-                    "includePromotedContent": True,
-                    "withQuickPromoteEligibilityTweetFields": True,
-                    "withVoice": True,
-                    "withV2Timeline": True
-                } if cursor else {
-                    "userId": f"{userId}",
-                    "count": count,
-                    "includePromotedContent": True,
-                    "withQuickPromoteEligibilityTweetFields": True,
-                    "withVoice": True,
-                    "withV2Timeline": True
-                }
-
-            case "media" | "likes":
-                userId = kwargs["userId"]
-                count = kwargs["count"]
-                cursor = kwargs["cursor"]
-
-                variables = {
-                    "userId": f"{userId}",
-                    "count": count,
-                    "cursor": f"{cursor}",
-                    "includePromotedContent": False,
-                    "withClientEventToken": False,
-                    "withBirdwatchNotes": False,
-                    "withVoice": True,
-                    "withV2Timeline": True
-                } if cursor else {
-                    "userId": f"{userId}",
-                    "count": count,
-                    "includePromotedContent": False,
-                    "withClientEventToken": False,
-                    "withBirdwatchNotes": False,
-                    "withVoice": True,
-                    "withV2Timeline": True
-                }
-
-            case "replies":
-                userId = kwargs["userId"]
-                count = kwargs["count"]
-                cursor = kwargs["cursor"]
-
-                variables = {
-                    "userId": f"{userId}",
-                    "count": count,
-                    "cursor": f"{cursor}",
-                    "includePromotedContent": True,
-                    "withCommunity": True,
-                    "withVoice": True,
-                    "withV2Timeline": True
-                } if cursor else {
-                    "userId": f"{userId}",
-                    "count": count,
-                    "includePromotedContent": True,
-                    "withCommunity": True,
-                    "withVoice": True,
-                    "withV2Timeline": True
-                }
-
-            case "recomendation":
-                limit = kwargs["limit"]
-                userId = kwargs["userId"]
-
-            case "tweetdetail":
+            case "__tweetdetail":
                 focalTweetId = kwargs["focalTweetId"]
                 controller_data = kwargs["controller_data"]
                 cursor = kwargs["cursor"]
@@ -191,14 +98,28 @@ class PyXDownloader:
 
                 fieldToggles = {"withArticleRichContentState": False}
 
-            case "following" | "followers" | "blue_verified_followers" | "followers_you_know":
+            case "allmedia" | "images":
                 userId = kwargs["userId"]
                 count = kwargs["count"]
+                cursor = kwargs["cursor"]
 
                 variables = {
                     "userId": f"{userId}",
                     "count": count,
-                    "includePromotedContent": False
+                    "cursor": f"{cursor}",
+                    "includePromotedContent": False,
+                    "withClientEventToken": False,
+                    "withBirdwatchNotes": False,
+                    "withVoice": True,
+                    "withV2Timeline": True
+                } if cursor else {
+                    "userId": f"{userId}",
+                    "count": count,
+                    "includePromotedContent": False,
+                    "withClientEventToken": False,
+                    "withBirdwatchNotes": False,
+                    "withVoice": True,
+                    "withV2Timeline": True
                 }
 
         params = {
@@ -226,10 +147,7 @@ class PyXDownloader:
                 "responsive_web_media_download_video_enabled": False,
                 "responsive_web_enhance_cards_enabled": False
             } if func_name in [
-                "search", "posts", "media",
-                "replies", "likes", "tweetdetail",
-                "following", "followers", "blue_verified_followers",
-                "followers_you_know"
+                "allmedia", "images", "__tweetdetail"
             ] else {
                 "hidden_profile_likes_enabled": True,
                 "hidden_profile_subscriptions_enabled": True,
@@ -243,27 +161,8 @@ class PyXDownloader:
                 "responsive_web_graphql_skip_user_profile_image_extensions_enabled": False,
                 "responsive_web_graphql_timeline_navigation_enabled": True
             }
-        } if func_name != "recomendation" else {
-            "include_profile_interstitial_type": 1,
-            "include_blocking": 1,
-            "include_blocked_by": 1,
-            "include_followed_by": 1,
-            "include_want_retweets": 1,
-            "include_mute_edge": 1,
-            "include_can_dm": 1,
-            "include_can_media_tag": 1,
-            "include_ext_has_nft_avatar": 1,
-            "include_ext_is_blue_verified": 1,
-            "include_ext_verified_type": 1,
-            "include_ext_profile_image_shape": 1,
-            "skip_status": 1,
-            "pc": True,
-            "display_location": "profile_accounts_sidebar",
-            "limit": limit,
-            "user_id": f"{userId}",
-            "ext": "mediaStats,highlightedLabel,hasNftAvatar,voiceInfo,birdwatchPivot,superFollowMetadata,unmentionInfo,editControl"
         }
-        if func_name in ["__profile", "tweetdetail"]:
+        if func_name in ["__profile", "__tweetdetail"]:
             params.update(
                 {
                     "fieldToggles": fieldToggles
@@ -271,55 +170,6 @@ class PyXDownloader:
             )
 
         return params
-
-    def __replacechar(self, text: str, replacement: str):
-        if not isinstance(text, str):
-            raise TypeError("Invalid parameter for '__replacechar'. Expected str, got {}".format(
-                type(text).__name__)
-            )
-        if not isinstance(replacement, str):
-            raise TypeError("Invalid parameter for '__replacechar'. Expected str, got {}".format(
-                type(replacement).__name__)
-            )
-
-        pattern = re.compile(r'_(.*?)\.jpg')
-        matches = pattern.search(
-            string=text.split("/")[-1]
-        )
-        if matches:
-            replace = matches.group(1)
-            result = text.replace(replace, replacement)
-            return result
-        return text
-
-    def __processmedia(self, entry: dict = None) -> dict:
-        """
-        Process media entry data and return a cleaned dictionary.
-        """
-        if not isinstance(entry, dict):
-            raise TypeError("Invalid parameter for '__processmedia'. Expected dict, got {}".format(
-                type(entry).__name__)
-            )
-
-        if "content" in entry:
-            deeper = entry["content"]["itemContent"]["tweet_results"]["result"]
-        else:
-            if "rest_id" in entry:
-                deeper = entry
-            else:
-                deeper = entry["tweet"]
-
-        if "legacy" in deeper:
-            legacy = deeper["legacy"]
-            medias = [
-                media["media_url_https"] if "video_info" not in media else max(
-                    media["video_info"]["variants"], key=lambda x: x.get(
-                        "bitrate", 0
-                    )
-                ).get("url", "")
-                for media in legacy["entities"]["media"]
-            ]
-            return medias
 
     def __profile(self, screen_name: str = None, proxy=None, **kwargs) -> dict:
         if not isinstance(screen_name, str):
@@ -395,8 +245,47 @@ class PyXDownloader:
             raise Exception(
                 f"Error! status code {resp.status_code} : {resp.reason}")
 
-    def media(self, screen_name: str, count: int = 20, cursor: str = None, proxy=None, **kwargs) -> dict:
+    def __processmedia(self, tweet_results: dict, func_name: str):
+        medias = []
+        for media in tweet_results.get("entities", {}).get("media", []):
+            media_type = media.get("type", "")
+
+            match func_name:
+                case "allmedia":
+                    if media_type == "photo":
+                        image = media.get("media_url_https", "")
+                        medias.append(image)
+                    if media_type == "video":
+                        videos = max(media.get("video_info", {}).get(
+                            "variants", []), key=lambda x: x.get("bitrate", 0)).get("url", "")
+                        medias.append(videos)
+
+                case "images":
+                    if media_type == "photo":
+                        image = media.get("media_url_https", "")
+                        medias.append(image)
+
+                case "__tweetdetail":
+                    if media_type == "photo":
+                        image = media.get("media_url_https", "")
+                        medias.append(image)
+                    elif media_type == "video":
+                        videos = max(media.get("video_info", {}).get(
+                            "variants", []), key=lambda x: x.get("bitrate", 0)).get("url", "")
+                        medias.append(videos)
+
+        return medias
+
+    def allmedia(self, screen_name: str, path: str, count: int = 20, cursor: str = None, proxy=None, **kwargs) -> dict:
+        Utility.mkdir(path=path)
+
+        print(
+            f"Downloading all media from Twitter users with the name @{screen_name}."
+        )
+        print(f"Saved in path: \"{path}\"")
+
         user_agent = self.__fake.user_agent()
+
         function_name = Utility.current_funcname()
         userId = self.__profile(screen_name=screen_name)
         params = self.__buildparams(
@@ -405,6 +294,7 @@ class PyXDownloader:
             count=count,
             cursor=cursor
         )
+
         for key in params:
             params.update({key: Utility.convertws(params[key])})
 
@@ -433,56 +323,319 @@ class PyXDownloader:
             response = content.decode('utf-8')
             data = json.loads(response)
             instructions = data["data"]["user"]["result"]["timeline_v2"]["timeline"]["instructions"]
+
             medias = []
-            for index, value in enumerate(instructions):
-                if isinstance(value, dict) and value["type"] == "TimelineAddEntries":
-                    deep = instructions[index]
+            for instruction in instructions:
+                if isinstance(instruction, dict) and instruction["type"] == "TimelineAddEntries":
 
                     cursor_value = ""
-                    for entry in deep["entries"]:
-                        for key in entry:
-                            if key == "content":
-                                for key_content in entry[key]:
-                                    if key_content == "itemContent":
-                                        if "tweet_results" in entry[key][key_content]:
-                                            tweet_results = entry[key][key_content]["tweet_results"]["result"]
-                                            twr = self.__processmedia(
-                                                entry=tweet_results)
-                                            medias.extend(twr)
-                                    if key_content == "items":
-                                        for item in entry[key][key_content]:
-                                            if "tweet_results" in item["item"]["itemContent"]:
-                                                tweet_results = item["item"]["itemContent"]["tweet_results"]["result"]
-                                                twr = self.__processmedia(
-                                                    entry=tweet_results)
-                                                medias.extend(twr)
-                                if entry[key].get("cursorType", "") == "Bottom":
-                                    cursor_value += entry[key].get(
-                                        "value", ""
-                                    )
+                    for entry in instruction.get("entries", []):
+                        content = entry.get("content", {})
+                        item_content = content.get("itemContent", {})
 
-                if isinstance(value, dict) and value["type"] == "TimelineAddToModule":
-                    deep = instructions[index]
+                        tweet_results = item_content.get(
+                            "tweet_results", {}
+                        ).get(
+                            "result", {}
+                        ).get(
+                            "legacy", {}
+                        )
 
-                    for entry in deep["moduleItems"]:
-                        if "item" in entry:
-                            deeper = entry["item"]["itemContent"]["tweet_results"]["result"]
-                            tweet_results = self.__processmedia(
-                                entry=deeper
+                        medias.extend(
+                            self.__processmedia(
+                                tweet_results=tweet_results,
+                                func_name=function_name
                             )
-                            medias.extend(tweet_results)
+                        )
 
-            for link in medias:
+                        items_content = content.get("items", {})
+
+                        for item_content in items_content:
+                            tweet_results = item_content.get(
+                                "item", {}
+                            ).get(
+                                "itemContent", {}
+                            ).get(
+                                "tweet_results", {}
+                            ).get(
+                                "result", {}
+                            ).get(
+                                "legacy", {}
+                            )
+
+                            medias.extend(
+                                self.__processmedia(
+                                    tweet_results=tweet_results,
+                                    func_name=function_name
+                                )
+                            )
+
+                        cursor_value += content.get("value", "") if content.get(
+                            "cursorType") == "Bottom" else ""
+
+                if isinstance(instruction, dict) and instruction["type"] == "TimelineAddToModule":
+
+                    for entry in instruction.get("moduleItems", []):
+                        tweet_results = entry.get(
+                            "item", {}
+                        ).get(
+                            "itemContent", {}
+                        ).get(
+                            "tweet_results", {}
+                        ).get(
+                            "result", {}
+                        ).get(
+                            "legacy", {}
+                        )
+
+                        medias.extend(
+                            self.__processmedia(
+                                tweet_results=tweet_results,
+                                func_name=function_name
+                            )
+                        )
+
+            for link in tqdm(medias, desc="Downloading"):
                 try:
                     data_content, filename = self.__download(url=link)
-                    with open(f"data/{filename}", "wb") as file:
+                    with open(f"{path}/{filename}", "wb") as file:
                         file.write(data_content)
                 except requests.RequestException:
                     pass
-            print(cursor_value)
+            print("DONE!!!🥳🥳🥳")
+            print(f"Cursor value for next page \"{cursor_value}\"")
         else:
             raise Exception(
                 f"Error! status code {resp.status_code} : {resp.reason}")
+
+    def images(self, screen_name: str, path: str, cursor: str = None, proxy=None, **kwargs) -> dict:
+        Utility.mkdir(path=path)
+
+        print(
+            f"Downloading all image from Twitter users with the name @{screen_name}."
+        )
+        print(f"Saved in path: \"{path}\"")
+
+        user_agent = self.__fake.user_agent()
+
+        function_name = Utility.current_funcname()
+        userId = self.__profile(screen_name=screen_name)
+        params = self.__buildparams(
+            func_name=function_name,
+            userId=userId,
+            count=20,
+            cursor=cursor
+        )
+
+        for key in params:
+            params.update({key: Utility.convertws(params[key])})
+
+        variables = quote(params["variables"])
+        features = quote(params["features"])
+        url = "https://twitter.com/i/api/graphql/oMVVrI5kt3kOpyHHTTKf5Q/UserMedia?variables={variables}&features={features}".format(
+            variables=variables,
+            features=features
+        )
+        self.__headers["User-Agent"] = user_agent
+        if self.__cookie is None:
+            self.__headers["X-Guest-Token"] = self.__guest_token()
+        else:
+            self.__headers["X-Csrf-Token"] = self.__Csrftoken()
+        resp = self.__session.request(
+            method="GET",
+            url=url,
+            timeout=60,
+            proxies=proxy,
+            headers=self.__headers,
+            **kwargs
+        )
+        status_code = resp.status_code
+        content = resp.content
+        if status_code == 200:
+            response = content.decode('utf-8')
+            data = json.loads(response)
+            instructions = data["data"]["user"]["result"]["timeline_v2"]["timeline"]["instructions"]
+
+            medias = []
+            for instruction in instructions:
+                if isinstance(instruction, dict) and instruction["type"] == "TimelineAddEntries":
+                    cursor_value = ""
+
+                    for entry in instruction.get("entries", []):
+                        content = entry.get("content", {})
+                        item_content = content.get("itemContent", {})
+
+                        tweet_results = item_content.get(
+                            "tweet_results", {}
+                        ).get(
+                            "result", {}
+                        ).get(
+                            "legacy", {}
+                        )
+
+                        medias.extend(
+                            self.__processmedia(
+                                tweet_results=tweet_results,
+                                func_name=function_name
+                            )
+                        )
+
+                        items_content = content.get("items", {})
+
+                        for item_content in items_content:
+                            tweet_results = item_content.get(
+                                "item", {}
+                            ).get(
+                                "itemContent", {}
+                            ).get(
+                                "tweet_results", {}
+                            ).get(
+                                "result", {}
+                            ).get(
+                                "legacy", {}
+                            )
+
+                            medias.extend(
+                                self.__processmedia(
+                                    tweet_results=tweet_results,
+                                    func_name=function_name
+                                )
+                            )
+
+                        cursor_value += content.get("value", "") if content.get(
+                            "cursorType") == "Bottom" else ""
+
+                if isinstance(instruction, dict) and instruction["type"] == "TimelineAddToModule":
+
+                    for entry in instruction.get("moduleItems", []):
+                        tweet_results = entry.get(
+                            "item", {}
+                        ).get(
+                            "itemContent", {}
+                        ).get(
+                            "tweet_results", {}
+                        ).get(
+                            "result", {}
+                        ).get(
+                            "legacy", {}
+                        )
+                        medias.extend(
+                            self.__processmedia(
+                                tweet_results=tweet_results,
+                                func_name=function_name
+                            )
+                        )
+
+            for link in tqdm(medias, desc="Downlaoding"):
+                try:
+                    data_content, filename = self.__download(url=link)
+                    with open(f"{path}/{filename}", "wb") as file:
+                        file.write(data_content)
+                except requests.RequestException:
+                    pass
+            print("DONE!!!🥳🥳🥳")
+            print(f"Cursor value for next page \"{cursor_value}\"")
+        else:
+            raise Exception(
+                f"Error! status code {resp.status_code} : {resp.reason}")
+
+    def __tweetdetail(
+            self,
+            focalTweetId: str | int,
+            controller_data: str = "DAACDAABDAABCgABAAAAAAAAAAAKAAkXK+YwNdoAAAAAAAA=",
+            cursor: str = None,
+            proxy=None,
+            **kwargs
+    ):
+        user_agent = self.__fake.user_agent()
+        function_name = Utility.current_funcname()
+        params = self.__buildparams(
+            func_name=function_name,
+            focalTweetId=focalTweetId,
+            controller_data=controller_data,
+            cursor=cursor
+        )
+        for key in params:
+            params.update({key: Utility.convertws(params[key])})
+
+        variables = quote(params["variables"])
+        features = quote(params["features"])
+        fieldToggles = quote(params["fieldToggles"])
+        url = "https://twitter.com/i/api/graphql/-H4B_lJDEA-O_7_qWaRiyg/TweetDetail?variables={variables}&features={features}&fieldToggles={fieldToggles}".format(
+            variables=variables,
+            features=features,
+            fieldToggles=fieldToggles
+        )
+        self.__headers["User-Agent"] = user_agent
+        if self.__cookie is None:
+            self.__headers["X-Guest-Token"] = self.__guest_token()
+        else:
+            self.__headers["X-Csrf-Token"] = self.__Csrftoken()
+        resp = self.__session.request(
+            method="GET",
+            url=url,
+            timeout=60,
+            proxies=proxy,
+            headers=self.__headers,
+            **kwargs
+        )
+        status_code = resp.status_code
+        content = resp.content
+        if status_code == 200:
+            response = content.decode('utf-8')
+            data = json.loads(response)
+            instructions = data["data"]["threaded_conversation_with_injections_v2"]["instructions"]
+            medias = []
+
+            for instruction in instructions:
+                if isinstance(instruction, dict) and instruction["type"] == "TimelineAddEntries":
+                    for entry in instruction.get("entries", []):
+                        content = entry.get("content", {})
+                        item_content = content.get("itemContent", {})
+
+                        tweet_results = item_content.get(
+                            "tweet_results", {}
+                        ).get(
+                            "result", {}
+                        ).get(
+                            "legacy", {}
+                        )
+
+                        medias.extend(
+                            self.__processmedia(
+                                tweet_results=tweet_results,
+                                func_name=function_name
+                            )
+                        )
+
+            return medias
+        else:
+            raise Exception(
+                f"Error! status code {resp.status_code} : {resp.reason}")
+
+    def linkdownloader(self, link: str, path: str) -> Any:
+        Utility.mkdir(path=path)
+
+        print(
+            f"Download media from the given link."
+        )
+        print(f"Saved in path: \"{path}\"")
+
+        pattern = re.compile(r'/([^/?]+)\?')
+        matches = pattern.search(string=link)
+        if matches:
+            focalTweetId = matches.group(1)
+
+        medias = self.__tweetdetail(focalTweetId=focalTweetId)
+
+        for media in tqdm(medias, desc="Downloading"):
+            try:
+                data_content, filename = self.__download(url=media)
+                with open(f"{path}/{filename}", "wb") as file:
+                    file.write(data_content)
+            except requests.RequestException:
+                pass
+        print("DONE!!!🥳🥳🥳")
 
 
 if __name__ == "__main__":
