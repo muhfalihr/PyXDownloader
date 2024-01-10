@@ -2,7 +2,9 @@ from PyXD.xdownloader import PyXDownloader
 from argparse import ArgumentParser
 
 if __name__ == "__main__":
-    argument_parser = ArgumentParser(description="PyXDownloader")
+    argument_parser = ArgumentParser(
+        description="PyXDownloader is a tool used to download media from a specified username or link."
+    )
     argument_parser.add_argument(
         "-f", "--function", type=str, dest="function", help="allmedia, images, linkdownloader", default="allmedia"
     )
