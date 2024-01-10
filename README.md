@@ -21,7 +21,7 @@ PyXDownloader is the ideal solution for those seeking a reliable and efficient t
 ## Requirements
 
 - **Python**
-  Already installed Python with version 3.10.12. See the [Installation and Setting up Python]().
+  Already installed Python with version 3.10.12. See the [Installation and Setting up Python](https://github.com/muhfalihr/PyXDownloader/?tab=readme-ov-file#installation-of-python-31012).
 
 - **Have an active Twitter account**
   Used to run programs because cookies are required from that account. If you don't have a Twitter account, you have to [log in](https://twitter.com/login) first.
