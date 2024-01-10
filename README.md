@@ -76,6 +76,7 @@ cookie = 'your-cookie'
 ```
 
 - **_Allmedias_**
+
   Downloads all media from a specific user's posts.
 
   ```sh
@@ -83,6 +84,7 @@ cookie = 'your-cookie'
   ```
 
 - **_Images_**
+
   Downloads all images from the specified user's posts.
 
   ```sh
@@ -90,7 +92,9 @@ cookie = 'your-cookie'
   ```
 
 - **_LinkDownloader_**
+
   Downloads the specified media via the link provided.
+
   ```sh
   python3 pxd -f linkdownloader -link http://example.org/media/12345678/abcdefg.jpg -p /path/to/save
   ```
@@ -98,21 +102,27 @@ cookie = 'your-cookie'
 ### Description of the arguments used.
 
 1. **_--function/-f_**
+
    Used to determine the name of the function that will execute the arguments entered.
 
 2. **_--link/-link_**
+
    Used to determine the link from the user's post to be downloaded.
 
 3. **_--path/-p_**
+
    Used to specify the path of the folder to save the download results.
 
 4. **_--screenname/-sn_**
+
    Used to determine the screen name of the user whose media posts we will download.
 
 5. **_--count/-count_**
+
    Used to determine the amount of media from user posts that will be downloaded. Even so, it won't affect anything because the response in the API is inconsistent.
 
 6. **_--cursor/-cursor_**
+
    Used to retrieve the next API response.
 
 ## License
