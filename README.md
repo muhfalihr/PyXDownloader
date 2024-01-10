@@ -18,6 +18,103 @@ Key features of PyXDownloader include:
 
 PyXDownloader is the ideal solution for those seeking a reliable and efficient tool to gather and manage content from Twitter accounts within the trusted Python programming environment. Explore the world of Twitter more easily and effectively with PyXDownloader.
 
+## Requirements
+
+- **Python**
+  Already installed Python with version 3.10.12. See the [Installation and Setting up Python]().
+
+- **Have an active Twitter account**
+  Used to run programs because cookies are required from that account. If you don't have a Twitter account, you have to [log in](https://twitter.com/login) first.
+
+## Clone the repository to your directory
+
+```sh
+# Change Directory
+cd /home/ubuntu/Desktop
+
+# Install gh
+sudo apt install gh
+
+# Auth gh
+gh auth login
+
+# Clonig Repository
+gh repo clone muhfalihr/PyXDownloader
+```
+
+## Installation of Python 3.10.12
+
+- Install Python version 3.
+
+  ```sh
+  apt install python3
+  ```
+
+- Instal Virtual environment for Python version 3.
+
+  ```sh
+  apt install python3-venv
+  ```
+
+- Create a Python virtual environment using the venv module.
+
+  ```sh
+  python3 -m venv .venv/my-venv
+  ```
+
+- Install the python package according to the requirements.txt file.
+  ```sh
+  .venv/my-venv/bin/pip install -r requirements.txt
+  ```
+
+## How to use ?
+
+Enter your cookies into the **cookie** variables available in the **_pxd_** file.
+
+```
+cookie = 'your-cookie'
+```
+
+- **_Allmedias_**
+  Downloads all media from a specific user's posts.
+
+  ```sh
+  python3 pxd -sn <screen-name> -p /path/to/save
+  ```
+
+- **_Images_**
+  Downloads all images from the specified user's posts.
+
+  ```sh
+  python3 pxd -f images -sn <screen-name> -p /path/to/save
+  ```
+
+- **_LinkDownloader_**
+  Downloads the specified media via the link provided.
+  ```sh
+  python3 pxd -f linkdownloader -link http://example.org/media/12345678/abcdefg.jpg -p /path/to/save
+  ```
+
+### Description of the arguments used.
+
+1. **_--function/-f_**
+   Used to determine the name of the function that will execute the arguments entered.
+
+2. **_--link/-link_**
+   Used to determine the link from the user's post to be downloaded.
+
+3. **_--path/-p_**
+   Used to specify the path of the folder to save the download results.
+
+4. **_--screenname/-sn_**
+   Used to determine the screen name of the user whose media posts we will download.
+
+5. **_--count/-count_**
+   Used to determine the amount of media from user posts that will be downloaded. Even so, it won't affect anything because the response in the API is inconsistent.
+
+6. **_--cursor/-cursor_**
+   Used to retrieve the next API response.
+
 ## License
 
-The PyCrawlConnet project is licensed by [MIT License](https://github.com/muhfalihr/PyXDownloader/blob/master/LICENSE).
+The PyXDownloader project is licensed by [MIT License](https://github.com/muhfalihr/PyXDownloader/blob/master/LICENSE).
