@@ -42,6 +42,9 @@ gh auth login
 
 # Clonig Repository
 gh repo clone muhfalihr/PyXDownloader
+
+# Change Directory
+cd PyXDownloader/
 ```
 
 ## Installation of Python 3.10.12
