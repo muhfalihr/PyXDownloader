@@ -90,7 +90,7 @@ gh repo clone muhfalihr/PyXDownloader
      Downloads all media from a specific user's posts.
 
      ```sh
-     ./pxd -sn <screen-name> -p /path/to/save
+     ./pxd -f allmedia -sn <screen-name> -p /path/to/save
      ```
 
    - **_Images_**
