@@ -1,23 +1,27 @@
 #!/usr/bin/env python3
+import os
 
 from PyXD.xdownloader import PyXDownloader
 from argparse import ArgumentParser
+
+script_path = os.path.realpath(__file__)
+path = os.path.dirname(script_path) + "/download"
 
 if __name__ == "__main__":
     argument_parser = ArgumentParser(
         description="PyXDownloader is a tool used to download media from a specified username or link."
     )
     argument_parser.add_argument(
-        "-f", "--function", type=str, dest="function", help="allmedia, images, linkdownloader", default="allmedia"
+        "-f", "--function", type=str, dest="function", help="allmedia, images, linkdownloader"
     )
     argument_parser.add_argument(
         "-link", "--link", type=str, dest="link", help="Image or video link."
     )
     argument_parser.add_argument(
-        "-p", "--path", type=str, dest="path", help="Path where to save photos or videos."
+        "-p", "--path", type=str, dest="path", help="Path where to save photos or videos.", default=path
     )
     argument_parser.add_argument(
-        "-sn", "--screenname", type=str, dest="screenname", help="Example: @AM_EllaJKT48 but not included @."
+        "-sn", "--screenname", type=str, dest="screenname", help="Example: @screen_name but not included @."
     )
     argument_parser.add_argument(
         "-count", "--count", type=int, dest="count", help="The amount of data to be downloaded.", default=20
