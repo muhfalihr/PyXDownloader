@@ -71,35 +71,43 @@ gh repo clone muhfalihr/PyXDownloader
 
 ## How to use ?
 
-Enter your cookies into the **cookie** variables available in the **_pxd_** file.
+1. Enter your cookies into the **cookie** variables available in the **_pxd_** file.
 
-```
-cookie = 'your-cookie'
-```
+   ```
+   cookie = 'your-cookie'
+   ```
 
-- **_Allmedias_**
+2. You need to give execute permission to the Python file. Use the following command in terminal or command prompt:
 
-  Downloads all media from a specific user's posts.
+   ```sh
+   chmod +x pxd
+   ```
 
-  ```sh
-  python3 pxd -sn <screen-name> -p /path/to/save
-  ```
+3. Functions used in running the program. As follows :
 
-- **_Images_**
+   - **_Allmedias_**
 
-  Downloads all images from the specified user's posts.
+     Downloads all media from a specific user's posts.
 
-  ```sh
-  python3 pxd -f images -sn <screen-name> -p /path/to/save
-  ```
+     ```sh
+     ./pxd -sn <screen-name> -p /path/to/save
+     ```
 
-- **_LinkDownloader_**
+   - **_Images_**
 
-  Downloads the specified media via the link provided.
+     Downloads all images from the specified user's posts.
 
-  ```sh
-  python3 pxd -f linkdownloader -link http://example.org/media/12345678/abcdefg.jpg -p /path/to/save
-  ```
+     ```sh
+     ./pxd -f images -sn <screen-name> -p /path/to/save
+     ```
+
+   - **_LinkDownloader_**
+
+     Downloads the specified media via the link provided.
+
+     ```sh
+     ./pxd -f linkdownloader -link http://example.org/media/12345678/abcdefg.jpg -p /path/to/save
+     ```
 
 ### Description of the arguments used.
 

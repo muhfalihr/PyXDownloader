@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from PyXD.xdownloader import PyXDownloader
 from argparse import ArgumentParser
 
