@@ -17,7 +17,7 @@ def main():
         "-link", "--link", type=str, dest="link", help="Image or video link."
     )
     argument_parser.add_argument(
-        "-p", "--path", type=str, dest="path", help="Path where to save photos or videos."
+        "-p", "--path", type=str, dest="path", help="Path where to save photos or videos.", default=Utility.downloadstorage()
     )
     argument_parser.add_argument(
         "-sn", "--screenname", type=str, dest="screenname", help="Example: @screen_name but not included @."

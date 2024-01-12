@@ -27,3 +27,11 @@ class URLValidationError(Exception):
 
 class FunctionNotFoundError(Exception):
     pass
+
+
+class CookieFileNotFoundError(Exception):
+    pass
+
+
+class CookieCreationError(Exception):
+    pass

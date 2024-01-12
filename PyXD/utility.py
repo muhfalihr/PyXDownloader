@@ -6,6 +6,7 @@ import re
 import os
 
 from datetime import datetime
+from PyXD.exception import *
 from typing import Any
 
 
@@ -85,18 +86,45 @@ class Utility:
                 raise e
 
     @staticmethod
+    def downloadstorage():
+        """
+        Used to determine the default storage location for downloaded results.
+        """
+        if os.name == 'posix':  # Linux/Mac
+            location = os.path.join(os.path.expanduser('~'), 'Downloads')
+            return location
+        elif os.name == 'nt':  # Windows
+            location = os.path.join(os.path.expanduser('~'), 'Downloads')
+            return location
+        else:
+            return None  # Other Operation System
+
+    @staticmethod
     def addcookie(cookie: str, path: str) -> Any:
         """
         Create a cookie file to store cookies from user input.
         """
-        with open(f"{path}/cookie", "w") as cookie_file:
-            cookie_file.write(cookie)
+        try:
+            with open(f"{path}/cookie", "w") as cookie_file:
+                cookie_file.write(cookie)
+            print(
+                f"SUCCES: The cookie file has been created and saved in the path \"{path}\"."
+            )
+        except CookieCreationError:
+            raise CookieCreationError(
+                f"FAILED: An error occurred while trying to create a cookie file"
+            )
 
     @staticmethod
     def getcookie(path: str) -> str:
         """
         Retrieves cookies from the cookie file in the form of a string.
         """
-        with open(f"{path}/cookie", "r") as cookie_file:
-            cookie = cookie_file.read()
-        return cookie
+        try:
+            with open(f"{path}/cookie", "r") as cookie_file:
+                cookie = cookie_file.read()
+            return cookie
+        except FileNotFoundError:
+            raise CookieFileNotFoundError(
+                "Error: Cookie file not found. Please check if the cookie file exists."
+            )
