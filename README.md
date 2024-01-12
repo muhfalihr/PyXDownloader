@@ -93,7 +93,7 @@ cd PyXDownloader/
      Downloads all media from a specific user's posts.
 
      ```sh
-     ./pxd -f allmedia -sn <screen-name> -p /path/to/save
+     ./pxd -func allmedia -sn <screen-name> -p /path/to/save
      ```
 
    - **_Images_**
@@ -101,7 +101,7 @@ cd PyXDownloader/
      Downloads all images from the specified user's posts.
 
      ```sh
-     ./pxd -f images -sn <screen-name> -p /path/to/save
+     ./pxd -func images -sn <screen-name> -p /path/to/save
      ```
 
    - **_LinkDownloader_**
@@ -109,12 +109,12 @@ cd PyXDownloader/
      Downloads the specified media via the link provided.
 
      ```sh
-     ./pxd -f linkdownloader -link http://example.org/media/12345678/abcdefg.jpg -p /path/to/save
+     ./pxd -func linkdownloader -link http://example.org/media/12345678/abcdefg.jpg -p /path/to/save
      ```
 
 ### Description of the arguments used.
 
-1. **_--function/-f_**
+1. **_--function/-func_**
 
    Used to determine the name of the function that will execute the arguments entered.
 

@@ -6,13 +6,18 @@ from requests.sessions import Session
 from urllib.parse import urljoin, unquote, quote
 from datetime import datetime
 from PyXD.utility import Utility
+from PyXD.exception import *
 from faker import Faker
-from typing import Any
+from typing import Any, Optional
 from tqdm import tqdm
 
 
 class PyXDownloader:
-    def __init__(self, cookie: str = None) -> Any:
+    def __init__(self, cookie: str) -> Any:
+        if not isinstance(cookie, str):
+            raise TypeError("Invalid parameter for 'PyXDownloader'. Expected str, got {}".format(
+                type(cookie).__name__)
+            )
         self.__cookie = cookie
         self.__session = Session()
         self.__fake = Faker()
@@ -24,38 +29,20 @@ class PyXDownloader:
         self.__headers["Sec-Fetch-Mode"] = "cors"
         self.__headers["Sec-Fetch-Site"] = "same-site"
         self.__headers["Authorization"] = "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA"
-        if cookie is not None:
-            self.__headers["Cookie"] = cookie
+        self.__headers["Cookie"] = cookie
 
-    def __guest_token(self):
-        user_agent = self.__fake.user_agent()
-        url = "https://api.twitter.com/1.1/guest/activate.json"
-        self.__headers["User-Agent"] = user_agent
-        resp = self.__session.post(
-            url=url,
-            headers=self.__headers,
-            timeout=60
-        )
-        status_code = resp.status_code
-        if status_code == 200:
-            content = resp.json()["guest_token"]
-            self.__headers.update({
-                "X-Guest-Token": content
-            })
-            return self.__headers["X-Guest-Token"]
-        else:
-            raise Exception(
-                f"Error! status code {resp.status_code} : {resp.reason}")
-
-    def __Csrftoken(self):
+    def __Csrftoken(self) -> str:
         pattern = re.compile(r'ct0=([a-zA-Z0-9_-]+)')
         matches = pattern.search(self.__cookie)
         if matches:
             csrftoken = matches.group(1)
             return csrftoken
-        return None
+        else:
+            raise CSRFTokenMissingError(
+                "Error! CSRF token is missing. Please ensure that a valid CSRF token is included in the cookie."
+            )
 
-    def __buildparams(self, **kwargs):
+    def __buildpayload(self, **kwargs) -> dict:
         func_name = kwargs["func_name"]
         match func_name:
             case "__profile":
@@ -122,7 +109,7 @@ class PyXDownloader:
                     "withV2Timeline": True
                 }
 
-        params = {
+        payload = {
             "variables": variables,
             "features": {
                 "responsive_web_graphql_exclude_directive_enabled": True,
@@ -163,41 +150,44 @@ class PyXDownloader:
             }
         }
         if func_name in ["__profile", "__tweetdetail"]:
-            params.update(
+            payload.update(
                 {
                     "fieldToggles": fieldToggles
                 }
             )
 
-        return params
+        return payload
 
-    def __profile(self, screen_name: str = None, proxy=None, **kwargs) -> dict:
+    def __profile(self, screen_name: str, proxy: Optional[str] = None, **kwargs) -> dict:
         if not isinstance(screen_name, str):
-            raise TypeError("Invalid parameter for 'profile'. Expected str, got {}".format(
+            raise TypeError("Invalid parameter for '__profile'. Expected str, got {}".format(
                 type(screen_name).__name__)
             )
+        if proxy is not None:
+            if not isinstance(proxy, str):
+                raise TypeError("Invalid parameter for '__profile'. Expected str, got {}".format(
+                    type(proxy).__name__)
+                )
+
         user_agent = self.__fake.user_agent()
         function_name = Utility.current_funcname()
-        params = self.__buildparams(
+        payload = self.__buildpayload(
             func_name=function_name,
             screen_name=screen_name
         )
-        for key in params:
-            params.update({key: Utility.convertws(params[key])})
+        for key in payload:
+            payload.update({key: Utility.convertws(payload[key])})
 
-        variables = quote(params["variables"])
-        features = quote(params["features"])
-        fieldToggles = quote(params["fieldToggles"])
+        variables = quote(payload["variables"])
+        features = quote(payload["features"])
+        fieldToggles = quote(payload["fieldToggles"])
         url = "https://api.twitter.com/graphql/NimuplG1OB7Fd2btCLdBOw/UserByScreenName?variables={variables}&features={features}&fieldToggles={fieldToggles}".format(
             variables=variables,
             features=features,
             fieldToggles=fieldToggles
         )
         self.__headers["User-Agent"] = user_agent
-        if self.__cookie is None:
-            self.__headers["X-Guest-Token"] = self.__guest_token()
-        else:
-            self.__headers["X-Csrf-Token"] = self.__Csrftoken()
+        self.__headers["X-Csrf-Token"] = self.__Csrftoken()
         resp = self.__session.request(
             method="GET",
             url=url,
@@ -215,10 +205,16 @@ class PyXDownloader:
             rest_id = result["rest_id"]
             return rest_id
         else:
-            raise Exception(
-                f"Error! status code {resp.status_code} : {resp.reason}")
+            raise HTTPErrorException(
+                f"Error! status code {resp.status_code} : {resp.reason}"
+            )
 
-    def __download(self, url: str):
+    def __download(self, url: str) -> Any:
+        if not isinstance(url, str):
+            raise TypeError("Invalid parameter for '__download'. Expected str, got {}".format(
+                type(url).__name__)
+            )
+
         user_agent = self.__fake.user_agent()
         self.__headers["User-Agent"] = user_agent
         resp = self.__session.request(
@@ -236,16 +232,28 @@ class PyXDownloader:
                     matches = pattern.search(url)
                     if matches:
                         filename = matches.group(1)
+                    else:
+                        filename = Utility.hashmd5(url) + ".mp4"
                 else:
                     filename = url.split("/")[-1]
             except IndexError:
-                filename = resp.headers.get("x-transaction-id")
+                filename = Utility.hashmd5(url) + ".jpg"
             return data, filename
         else:
-            raise Exception(
-                f"Error! status code {resp.status_code} : {resp.reason}")
+            raise HTTPErrorException(
+                f"Error! status code {resp.status_code} : {resp.reason}"
+            )
 
-    def __processmedia(self, tweet_results: dict, func_name: str):
+    def __processmedia(self, tweet_results: dict, func_name: str) -> list:
+        if not isinstance(tweet_results, dict):
+            raise TypeError("Invalid parameter for '__processmedia'. Expected dict, got {}".format(
+                type(tweet_results).__name__)
+            )
+        if not isinstance(func_name, str):
+            raise TypeError("Invalid parameter for '__processmedia'. Expected str, got {}".format(
+                type(func_name).__name__)
+            )
+
         medias = []
         for media in tweet_results.get("entities", {}).get("media", []):
             media_type = media.get("type", "")
@@ -276,7 +284,39 @@ class PyXDownloader:
 
         return medias
 
-    def allmedia(self, screen_name: str, path: str, count: int = 20, cursor: str = None, proxy=None, **kwargs) -> dict:
+    def allmedia(
+            self,
+            screen_name: str,
+            path: str,
+            count: Optional[int] = 20,
+            cursor: Optional[str] = None,
+            proxy: Optional[str] = None,
+            **kwargs
+    ) -> dict:
+
+        if not isinstance(screen_name, str):
+            raise TypeError("Invalid parameter for 'allmedia'. Expected str, got {}".format(
+                type(screen_name).__name__)
+            )
+        if not isinstance(path, str):
+            raise TypeError("Invalid parameter for 'allmedia'. Expected str, got {}".format(
+                type(path).__name__)
+            )
+        if not isinstance(count, int):
+            raise TypeError("Invalid parameter for 'allmedia'. Expected int, got {}".format(
+                type(count).__name__)
+            )
+        if cursor is not None:
+            if not isinstance(cursor, str):
+                raise TypeError("Invalid parameter for 'allmedia'. Expected str, got {}".format(
+                    type(cursor).__name__)
+                )
+        if proxy is not None:
+            if not isinstance(proxy, str):
+                raise TypeError("Invalid parameter for 'allmedia'. Expected str, got {}".format(
+                    type(proxy).__name__)
+                )
+
         Utility.mkdir(path=path)
 
         print(
@@ -288,27 +328,24 @@ class PyXDownloader:
 
         function_name = Utility.current_funcname()
         userId = self.__profile(screen_name=screen_name)
-        params = self.__buildparams(
+        payload = self.__buildpayload(
             func_name=function_name,
             userId=userId,
             count=count,
             cursor=cursor
         )
 
-        for key in params:
-            params.update({key: Utility.convertws(params[key])})
+        for key in payload:
+            payload.update({key: Utility.convertws(payload[key])})
 
-        variables = quote(params["variables"])
-        features = quote(params["features"])
+        variables = quote(payload["variables"])
+        features = quote(payload["features"])
         url = "https://twitter.com/i/api/graphql/oMVVrI5kt3kOpyHHTTKf5Q/UserMedia?variables={variables}&features={features}".format(
             variables=variables,
             features=features
         )
         self.__headers["User-Agent"] = user_agent
-        if self.__cookie is None:
-            self.__headers["X-Guest-Token"] = self.__guest_token()
-        else:
-            self.__headers["X-Csrf-Token"] = self.__Csrftoken()
+        self.__headers["X-Csrf-Token"] = self.__Csrftoken()
         resp = self.__session.request(
             method="GET",
             url=url,
@@ -400,15 +437,46 @@ class PyXDownloader:
                     data_content, filename = self.__download(url=link)
                     with open(f"{path}/{filename}", "wb") as file:
                         file.write(data_content)
-                except requests.RequestException:
-                    pass
+                except RequestProcessingError:
+                    raise RequestProcessingError(
+                        "FAILED! Error processing the request!"
+                    )
+
             print("DONE!!!🥳🥳🥳")
             print(f"Cursor value for next page \"{cursor_value}\"")
         else:
-            raise Exception(
-                f"Error! status code {resp.status_code} : {resp.reason}")
+            raise HTTPErrorException(
+                f"Error! status code {resp.status_code} : {resp.reason}"
+            )
 
-    def images(self, screen_name: str, path: str, cursor: str = None, proxy=None, **kwargs) -> dict:
+    def images(
+            self,
+            screen_name: str,
+            path: str,
+            cursor: Optional[str] = None,
+            proxy: Optional[str] = None,
+            **kwargs
+    ) -> dict:
+
+        if not isinstance(screen_name, str):
+            raise TypeError("Invalid parameter for 'allmedia'. Expected str, got {}".format(
+                type(screen_name).__name__)
+            )
+        if not isinstance(path, str):
+            raise TypeError("Invalid parameter for 'allmedia'. Expected str, got {}".format(
+                type(path).__name__)
+            )
+        if cursor is not None:
+            if not isinstance(cursor, str):
+                raise TypeError("Invalid parameter for 'allmedia'. Expected str, got {}".format(
+                    type(cursor).__name__)
+                )
+        if proxy is not None:
+            if not isinstance(proxy, str):
+                raise TypeError("Invalid parameter for 'allmedia'. Expected str, got {}".format(
+                    type(proxy).__name__)
+                )
+
         Utility.mkdir(path=path)
 
         print(
@@ -420,27 +488,24 @@ class PyXDownloader:
 
         function_name = Utility.current_funcname()
         userId = self.__profile(screen_name=screen_name)
-        params = self.__buildparams(
+        payload = self.__buildpayload(
             func_name=function_name,
             userId=userId,
             count=20,
             cursor=cursor
         )
 
-        for key in params:
-            params.update({key: Utility.convertws(params[key])})
+        for key in payload:
+            payload.update({key: Utility.convertws(payload[key])})
 
-        variables = quote(params["variables"])
-        features = quote(params["features"])
+        variables = quote(payload["variables"])
+        features = quote(payload["features"])
         url = "https://twitter.com/i/api/graphql/oMVVrI5kt3kOpyHHTTKf5Q/UserMedia?variables={variables}&features={features}".format(
             variables=variables,
             features=features
         )
         self.__headers["User-Agent"] = user_agent
-        if self.__cookie is None:
-            self.__headers["X-Guest-Token"] = self.__guest_token()
-        else:
-            self.__headers["X-Csrf-Token"] = self.__Csrftoken()
+        self.__headers["X-Csrf-Token"] = self.__Csrftoken()
         resp = self.__session.request(
             method="GET",
             url=url,
@@ -531,46 +596,66 @@ class PyXDownloader:
                     data_content, filename = self.__download(url=link)
                     with open(f"{path}/{filename}", "wb") as file:
                         file.write(data_content)
-                except requests.RequestException:
-                    pass
+                except RequestProcessingError:
+                    raise RequestProcessingError(
+                        "FAILED! Error processing the request!"
+                    )
             print("DONE!!!🥳🥳🥳")
             print(f"Cursor value for next page \"{cursor_value}\"")
         else:
-            raise Exception(
-                f"Error! status code {resp.status_code} : {resp.reason}")
+            raise HTTPErrorException(
+                f"Error! status code {resp.status_code} : {resp.reason}"
+            )
 
     def __tweetdetail(
             self,
             focalTweetId: str | int,
-            controller_data: str = "DAACDAABDAABCgABAAAAAAAAAAAKAAkXK+YwNdoAAAAAAAA=",
-            cursor: str = None,
-            proxy=None,
+            controller_data: Optional[str] = "DAACDAABDAABCgABAAAAAAAAAAAKAAkXK+YwNdoAAAAAAAA=",
+            cursor: Optional[str] = None,
+            proxy: Optional[str] = None,
             **kwargs
-    ):
+    ) -> list:
+
+        if not isinstance(focalTweetId, (str | int)):
+            raise TypeError("Invalid parameter for '__tweetdetail'. Expected str|int, got {}".format(
+                type(focalTweetId).__name__)
+            )
+        if not isinstance(controller_data, str):
+            raise TypeError("Invalid parameter for '__tweetdetail'. Expected str, got {}".format(
+                type(controller_data).__name__)
+            )
+        if cursor is not None:
+            if not isinstance(cursor, str):
+                raise TypeError("Invalid parameter for '__tweetdetail'. Expected str, got {}".format(
+                    type(cursor).__name__)
+                )
+        if proxy is not None:
+            if not isinstance(proxy, str):
+                raise TypeError("Invalid parameter for '__tweetdetail'. Expected str, got {}".format(
+                    type(proxy).__name__)
+                )
+
         user_agent = self.__fake.user_agent()
         function_name = Utility.current_funcname()
-        params = self.__buildparams(
+        payload = self.__buildpayload(
             func_name=function_name,
             focalTweetId=focalTweetId,
             controller_data=controller_data,
             cursor=cursor
         )
-        for key in params:
-            params.update({key: Utility.convertws(params[key])})
+        for key in payload:
+            payload.update({key: Utility.convertws(payload[key])})
 
-        variables = quote(params["variables"])
-        features = quote(params["features"])
-        fieldToggles = quote(params["fieldToggles"])
+        variables = quote(payload["variables"])
+        features = quote(payload["features"])
+        fieldToggles = quote(payload["fieldToggles"])
         url = "https://twitter.com/i/api/graphql/-H4B_lJDEA-O_7_qWaRiyg/TweetDetail?variables={variables}&features={features}&fieldToggles={fieldToggles}".format(
             variables=variables,
             features=features,
             fieldToggles=fieldToggles
         )
         self.__headers["User-Agent"] = user_agent
-        if self.__cookie is None:
-            self.__headers["X-Guest-Token"] = self.__guest_token()
-        else:
-            self.__headers["X-Csrf-Token"] = self.__Csrftoken()
+        self.__headers["X-Csrf-Token"] = self.__Csrftoken()
         resp = self.__session.request(
             method="GET",
             url=url,
@@ -610,8 +695,9 @@ class PyXDownloader:
 
             return medias
         else:
-            raise Exception(
-                f"Error! status code {resp.status_code} : {resp.reason}")
+            raise HTTPErrorException(
+                f"Error! status code {resp.status_code} : {resp.reason}"
+            )
 
     def linkdownloader(self, link: str, path: str) -> Any:
         Utility.mkdir(path=path)
@@ -625,6 +711,10 @@ class PyXDownloader:
         matches = pattern.search(string=link)
         if matches:
             focalTweetId = matches.group(1)
+        else:
+            raise URLValidationError(
+                f"Error! Invalid URL \"{link}\". Make sure the URL is correctly formatted and complete."
+            )
 
         medias = self.__tweetdetail(focalTweetId=focalTweetId)
 
@@ -633,8 +723,10 @@ class PyXDownloader:
                 data_content, filename = self.__download(url=media)
                 with open(f"{path}/{filename}", "wb") as file:
                     file.write(data_content)
-            except requests.RequestException:
-                pass
+            except RequestProcessingError:
+                raise RequestProcessingError(
+                    "FAILED! Error processing the request!"
+                )
         print("DONE!!!🥳🥳🥳")
 
 
