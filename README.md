@@ -1,4 +1,4 @@
-[![Instagram: ____mfr.py](https://img.shields.io/badge/Instagram-Follow%20Me-blue?style=social&logo=instagram)](https://www.instagram.com/_____mfr.py/)
+| [![Instagram: ____mfr.py](https://img.shields.io/badge/Instagram-Follow%20Me-blue?style=social&logo=instagram)](https://www.instagram.com/_____mfr.py/) | [![Instagram: mfr](https://img.shields.io/badge/Twitter-Follow%20Me-blue?style=social&logo=Twitter)](https://twitter.com/muhfalihr) |
 
 # PyXDownloader
 
