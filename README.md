@@ -1,4 +1,4 @@
-| [![Instagram: ____mfr.py](https://img.shields.io/badge/Instagram-Follow%20Me-blue?style=social&logo=instagram)](https://www.instagram.com/_____mfr.py/) | [![Instagram: mfr](https://img.shields.io/badge/Twitter-Follow%20Me-blue?style=social&logo=Twitter)](https://twitter.com/muhfalihr) |
+[![Instagram: ____mfr.py](https://img.shields.io/badge/Instagram-Follow%20Me-blue?style=social&logo=instagram)](https://www.instagram.com/_____mfr.py/) [![Instagram: mfr](https://img.shields.io/badge/Twitter-Follow%20Me-blue?style=social&logo=Twitter)](https://twitter.com/muhfalihr)
 
 # PyXDownloader
 
@@ -68,6 +68,7 @@ cd PyXDownloader/
   ```
 
 - Install the python package according to the requirements.txt file.
+
   ```sh
   .venv/my-venv/bin/pip install -r requirements.txt
   ```
