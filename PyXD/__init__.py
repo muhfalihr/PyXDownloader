@@ -1,25 +1,23 @@
 import os
 
 from PyXD.xdownloader import PyXDownloader
+from PyXD.utility import Utility
 from PyXD.exception import *
-from typing import Any
 from argparse import ArgumentParser
 
 
-def main(script_path: str) -> Any:
-    path = os.path.dirname(script_path) + "/download"
-
+def main():
     argument_parser = ArgumentParser(
         description="PyXDownloader is a tool used to download media from a specified username or link."
     )
     argument_parser.add_argument(
-        "-func", "--function", type=str, dest="function", help="\"am | allmedia\", \"i | images\", \"ld | linkdownloader\"", required=True
+        "-func", "--function", type=str, dest="function", help="\"am | allmedia\", \"i | images\", \"ld | linkdownloader\""
     )
     argument_parser.add_argument(
         "-link", "--link", type=str, dest="link", help="Image or video link."
     )
     argument_parser.add_argument(
-        "-p", "--path", type=str, dest="path", help="Path where to save photos or videos.", default=path
+        "-p", "--path", type=str, dest="path", help="Path where to save photos or videos."
     )
     argument_parser.add_argument(
         "-sn", "--screenname", type=str, dest="screenname", help="Example: @screen_name but not included @."
@@ -33,35 +31,45 @@ def main(script_path: str) -> Any:
     argument_parser.add_argument(
         '--version', action='version', version='%(prog)s 1.0'
     )
+    argument_parser.add_argument(
+        "-cookie", "--cookie", type=str, dest="cookie", help="Enter your Twitter browser cookies."
+    )
 
     args = argument_parser.parse_args()
 
-    cookie = ''  # Required
-    PXD = PyXDownloader(cookie=cookie)
+    script_path = os.path.realpath(__file__)
+    path = '/'.join(os.path.dirname(script_path).split("/")[:-1])
 
-    match args.function:
-        case "allmedia" | "am":
-            PXD.allmedia(
-                screen_name=args.screenname,
-                path=args.path,
-                count=args.count,
-                cursor=args.cursor
-            )
+    if args.cookie:
+        Utility.addcookie(args.cookie, path)
 
-        case "images" | "i":
-            PXD.images(
-                screen_name=args.screenname,
-                path=args.path,
-                cursor=args.cursor
-            )
+    else:
+        cookie = Utility.getcookie(path)
+        PXD = PyXDownloader(cookie=cookie)
 
-        case "linkdownloader" | "ld":
-            PXD.linkdownloader(
-                link=args.link,
-                path=args.path
-            )
+        match args.function:
+            case "allmedia" | "am":
+                PXD.allmedia(
+                    screen_name=args.screenname,
+                    path=args.path,
+                    count=args.count,
+                    cursor=args.cursor
+                )
 
-        case _:
-            raise FunctionNotFoundError(
-                f"Error! The function with the name '{args.function}' is not available."
-            )
+            case "images" | "i":
+                PXD.images(
+                    screen_name=args.screenname,
+                    path=args.path,
+                    cursor=args.cursor
+                )
+
+            case "linkdownloader" | "ld":
+                PXD.linkdownloader(
+                    link=args.link,
+                    path=args.path
+                )
+
+            case _:
+                raise FunctionNotFoundError(
+                    f"Error! The function with the name '{args.function}' is not available."
+                )

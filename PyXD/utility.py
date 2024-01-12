@@ -6,6 +6,7 @@ import re
 import os
 
 from datetime import datetime
+from typing import Any
 
 
 class Utility:
@@ -13,7 +14,7 @@ class Utility:
     Encapsulates a collection of utility functions for various tasks.
     """
     @staticmethod
-    def hashmd5(url: str):
+    def hashmd5(url: str) -> str:
         """Calculates the MD5 hash of the given URL.
         Returns the hashed value as a hexadecimal string.
         """
@@ -23,7 +24,7 @@ class Utility:
         return hashed
 
     @staticmethod
-    def timezone(date_time, format):
+    def timezone(date_time: str, format: str) -> str:
         """Converts a datetime string to the corresponding time zone offset for Asia/Jakarta.
         Takes the datetime string, a format string specifying its format, and returns the offset as a string like "+0700".
         """
@@ -33,7 +34,7 @@ class Utility:
         return timezone
 
     @staticmethod
-    def UniqClear(text):
+    def UniqClear(text: str) -> str:
         """Normalizes and removes non-ASCII characters from the given text.
         Returns the ASCII-only version of the text.
         """
@@ -42,7 +43,7 @@ class Utility:
         return ascii_text
 
     @staticmethod
-    def makeunique(datas: list):
+    def makeunique(datas: list) -> list:
         """
         Removes duplicate elements from a list while preserving order.
         Returns a new list containing only unique elements.
@@ -52,7 +53,7 @@ class Utility:
         return unique_list
 
     @staticmethod
-    def convertws(data: dict):
+    def convertws(data: dict) -> str:
         """
         Converts dict data to string and removes spaces at the end of the text.
         """
@@ -61,7 +62,7 @@ class Utility:
         return without_whitespace
 
     @staticmethod
-    def current_funcname():
+    def current_funcname() -> str:
         """
         Calls the name of the function used.
         """
@@ -72,7 +73,7 @@ class Utility:
         return function_name
 
     @staticmethod
-    def mkdir(path: str):
+    def mkdir(path: str) -> Any:
         """
         Check whether the given path exists in the system, if not, a new folder will be created with a name that matches the given path.
         """
@@ -82,3 +83,20 @@ class Utility:
                 print("Created a new folder because the given folder does not exist.")
             except OSError as e:
                 raise e
+
+    @staticmethod
+    def addcookie(cookie: str, path: str) -> Any:
+        """
+        Create a cookie file to store cookies from user input.
+        """
+        with open(f"{path}/cookie", "w") as cookie_file:
+            cookie_file.write(cookie)
+
+    @staticmethod
+    def getcookie(path: str) -> str:
+        """
+        Retrieves cookies from the cookie file in the form of a string.
+        """
+        with open(f"{path}/cookie", "r") as cookie_file:
+            cookie = cookie_file.read()
+        return cookie

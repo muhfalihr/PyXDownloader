@@ -74,16 +74,16 @@ cd PyXDownloader/
 
 ## How to use ?
 
-1. Enter your cookies into the **cookie** variables available in the **_pxd_** file.
-
-   ```
-   cookie = 'your-cookie'
-   ```
-
-2. You need to give execute permission to the Python file. Use the following command in terminal or command prompt:
+1. You need to give execute permission to the Python file. Use the following command in terminal or command prompt:
 
    ```sh
    chmod +x pxd
+   ```
+
+2. Add cookies to the cookie file to be created.
+
+   ```sh
+   ./pxd -cookie 'your-cookie'
    ```
 
 3. Functions used in running the program. As follows :
@@ -137,6 +137,14 @@ cd PyXDownloader/
 6. **_--cursor/-cursor_**
 
    Used to retrieve the next API response.
+
+7. **_--version_**
+
+   See the version for this PyXDownloader tool.
+
+8. **_--cookie/-cookie_**
+
+   Used to enter your browser cookies.
 
 ## License
 
