@@ -89,7 +89,7 @@ cd PyXDownloader/
 
 3. Functions used in running the program. As follows :
 
-   - **_Allmedias_**
+   - **_Allmedia_**
 
      Downloads all media from a specific user's posts.
 
@@ -125,7 +125,7 @@ cd PyXDownloader/
 
 3. **_--path/-p_**
 
-   Used to specify the path of the folder to save the download results.
+   Used to specify the path of the folder to save the download results. The default is the default folder where the download results are saved, namely the **Downloads** folder.
 
 4. **_--screenname/-sn_**
 
@@ -133,7 +133,7 @@ cd PyXDownloader/
 
 5. **_--count/-count_**
 
-   Used to determine the amount of media from user posts that will be downloaded. Even so, it won't affect anything because the response in the API is inconsistent.
+   Used to determine the amount of media from user posts that will be downloaded. Even so, it won't affect anything because the response in the API is inconsistent. The default value is 20.
 
 6. **_--cursor/-cursor_**
 
