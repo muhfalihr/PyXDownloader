@@ -1,9 +1,8 @@
 import re
 import json
-import requests
 
 from requests.sessions import Session
-from urllib.parse import urljoin, unquote, quote
+from urllib.parse import quote
 from datetime import datetime
 from PyXD.utility import Utility
 from PyXD.exception import *
@@ -13,6 +12,23 @@ from tqdm import tqdm
 
 
 class PyXDownloader:
+    """
+    PyXDownloader is an advanced tool developed using the Python programming language to assist users in downloading posts from Twitter. With a simple and user-friendly interface, PyXDownloader allows users to quickly and efficiently retrieve content such as tweets, images, and videos from specific Twitter accounts.
+
+    Key features of PyXDownloader include:
+
+        - User-Centric Downloads: Focuses on user-friendly content retrieval from specific Twitter accounts.
+        - Efficient Python Usage: Built with the Python programming language, ensuring fast and efficient performance.
+        - Intuitive Graphic Interface: A user-friendly interface design makes it easy for users to configure and execute downloads seamlessly.
+        - Content Filtering Options: Enables users to customize downloads based on date, content type, or specific keywords.
+        - Download History Management: Stores a history of downloads, allowing users to easily access and manage previously downloaded files.
+        - Regular Update Support: Ensures the tool stays up-to-date with the latest changes or updates on the Twitter platform.
+
+        PyXDownloader is the ideal solution for those seeking a reliable and efficient tool to gather and manage content from Twitter accounts within the trusted Python programming environment. Explore the world of Twitter more easily and effectively with PyXDownloader.
+
+    Created and developed by @muhfalihr.
+    """
+
     def __init__(self, cookie: str) -> Any:
         if not isinstance(cookie, str):
             raise TypeError("Invalid parameter for 'PyXDownloader'. Expected str, got {}".format(
@@ -32,6 +48,9 @@ class PyXDownloader:
         self.__headers["Cookie"] = cookie
 
     def __Csrftoken(self) -> str:
+        """
+        Takes the CsrfToken from the given cookie and returns the value of the csrftoken obtained and is of string data type.
+        """
         pattern = re.compile(r'ct0=([a-zA-Z0-9_-]+)')
         matches = pattern.search(self.__cookie)
         if matches:
@@ -43,6 +62,9 @@ class PyXDownloader:
             )
 
     def __buildpayload(self, **kwargs) -> dict:
+        """
+        Creates a payload for the request based on the function name and value provided and returns a value of dictionary data type.
+        """
         func_name = kwargs["func_name"]
         match func_name:
             case "__profile":
@@ -158,7 +180,10 @@ class PyXDownloader:
 
         return payload
 
-    def __profile(self, screen_name: str, proxy: Optional[str] = None, **kwargs) -> dict:
+    def __profile(self, screen_name: str, proxy: Optional[str] = None, **kwargs) -> str:
+        """
+        Make a request to the API to retrieve user profile details and return the value of rest_id obtained in the form of a string.
+        """
         if not isinstance(screen_name, str):
             raise TypeError("Invalid parameter for '__profile'. Expected str, got {}".format(
                 type(screen_name).__name__)
@@ -210,6 +235,9 @@ class PyXDownloader:
             )
 
     def __download(self, url: str) -> Any:
+        """
+        Make a request to the URL obtained and retrieve the filename and content from the API response and return the value of the filename in the form of a string and data in the form of the response content.
+        """
         if not isinstance(url, str):
             raise TypeError("Invalid parameter for '__download'. Expected str, got {}".format(
                 type(url).__name__)
@@ -245,6 +273,9 @@ class PyXDownloader:
             )
 
     def __processmedia(self, tweet_results: dict, func_name: str) -> list:
+        """
+        Processes the response from a request and takes the value in the form of the URL of a user's posted media and returns it in the form of a list.
+        """
         if not isinstance(tweet_results, dict):
             raise TypeError("Invalid parameter for '__processmedia'. Expected dict, got {}".format(
                 type(tweet_results).__name__)
@@ -293,6 +324,19 @@ class PyXDownloader:
             proxy: Optional[str] = None,
             **kwargs
     ) -> dict:
+        """
+        Carry out the request process and process the response to retrieve all the media URLs obtained and download all the media URLs obtained.
+
+        Arguments :
+          - screen_name = (Required) @example_name
+          - path = (Required) The path to where the download results are stored.
+          - count = (Optional) The number of posts from which data will be taken. The default value is 20.
+          - cursor = (Optional) A value used to get the next API response. The default value is None.
+          - proxy = (Optional) Used as an intermediary between the client and the server you access. These parameters are an important part of the request configuration and can help you direct traffic through proxy servers that may be needed for various purposes, such as security, anonymity, or access control.
+
+        Keyword Argument:
+          - **kwargs
+        """
 
         if not isinstance(screen_name, str):
             raise TypeError("Invalid parameter for 'allmedia'. Expected str, got {}".format(
@@ -457,6 +501,19 @@ class PyXDownloader:
             proxy: Optional[str] = None,
             **kwargs
     ) -> dict:
+        """
+        Carry out the request process and process the response to retrieve all media URLs in the form of images obtained and download all media URLs obtained.
+
+        Arguments :
+          - screen_name = (Required) @example_name
+          - path = (Required) The path to where the download results are stored.
+          - count = (Optional) The number of posts from which data will be taken. The default value is 20.
+          - cursor = (Optional) A value used to get the next API response. The default value is None.
+          - proxy = (Optional) Used as an intermediary between the client and the server you access. These parameters are an important part of the request configuration and can help you direct traffic through proxy servers that may be needed for various purposes, such as security, anonymity, or access control.
+
+        Keyword Argument:
+          - **kwargs
+        """
 
         if not isinstance(screen_name, str):
             raise TypeError("Invalid parameter for 'allmedia'. Expected str, got {}".format(
@@ -615,6 +672,18 @@ class PyXDownloader:
             proxy: Optional[str] = None,
             **kwargs
     ) -> list:
+        """
+        Make a request to the API to retrieve media links from a post and return values in the form of a list.
+
+        Arguments : 
+          - focalTweetId = (Required) The ID of the user's post.
+          - controller_data = (Optional) It's best not to change it. The default value is "DAACDAABDAABCgABAAAAAAAAAAAKAAkXK+YwNdoAAAAAAAA="
+          - cursor = (Optional) A value used to get the next API response. The default value is None.
+          - proxy = (Optional) Used as an intermediary between the client and the server you access. These parameters are an important part of the request configuration and can help you direct traffic through proxy servers that may be needed for various purposes, such as security, anonymity, or access control.
+
+        Keyword Argument :
+          - **kwargs
+        """
 
         if not isinstance(focalTweetId, (str | int)):
             raise TypeError("Invalid parameter for '__tweetdetail'. Expected str|int, got {}".format(
@@ -700,6 +769,13 @@ class PyXDownloader:
             )
 
     def linkdownloader(self, link: str, path: str) -> Any:
+        """
+        Carry out the process of downloading media in the form of images or videos from the link provided, then process it and return the results stored in the specified path.
+
+        Arguments :
+          - link = (Required) Post link.
+          - path = (Required) The path to where the download results are stored.
+        """
         Utility.mkdir(path=path)
 
         print(
